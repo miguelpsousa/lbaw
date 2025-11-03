@@ -1,0 +1,691 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: 'ProjectFlow Web API'
+  description: 'Web Resources Specification (A7) for ProjectFlow'
+
+servers:
+  - url: db.fe.up.pt
+    description: Production server
+
+externalDocs: 
+  description: Find more info here ( link to wiki ) 
+  url: https://gitlab.up.pt/lbaw/lbaw2425/lbaw24107/-/wikis
+tags:
+  - name: 'M01: Authentication and Individual Profile'
+  - name: 'M02: Projects'
+  - name: 'M03: Tasks'
+  - name: 'M04: User Administration and Static Pages'
+  - name: 'M05: Notifications' 
+  - name: 'M06: Search'
+
+paths:
+ /login:
+   get:
+     operationId: R101
+     summary: 'R101: Login Form'
+     description: 'Provide login form. Access: PUB'
+     tags:
+       - 'M01: Authentication and Individual Profile'
+     responses:
+       '200':
+         description: 'Ok. Show Log-in UI'
+   post:
+     operationId: R102
+     summary: 'R102: Login Action'
+     description: 'Processes the login form submission. Access: PUB'
+     tags:
+       - 'M01: Authentication and Individual Profile'
+
+     requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+               email:          # <!--- form field name
+                 type: string
+               password:    # <!--- form field name
+                 type: string
+             required:
+                  - email
+                  - password
+                
+
+     responses:
+       '302':
+         description: 'Redirect after processing the login credentials.'
+         headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful authentication. Redirect to user profile.'
+                 value: '/users/{id}'
+               302Error:
+                 description: 'Failed authentication. Redirect to login form.'
+                 value: '/login'
+
+ /logout:
+
+   post:
+     operationId: R103
+     summary: 'R103: Logout Action'
+     description: 'Logout the current authenticated user. Access: USR, ADM'
+     tags:
+       - 'M01: Authentication and Individual Profile'
+     responses:
+       '302':
+         description: 'Redirect after processing logout.'
+         headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful logout. Redirect to login form.'
+                 value: '/login'
+
+ /register:
+   get:
+     operationId: R104
+     summary: 'R104: Register Form'
+     description: 'Provide new user registration form. Access: PUB'
+     tags:
+       - 'M01: Authentication and Individual Profile'
+     responses:
+       '200':
+         description: 'Ok. Show Sign-Up UI'
+
+   post:
+     operationId: R105
+     summary: 'R105: Register Action'
+     description: 'Processes the new user registration form submission. Access: PUB'
+     tags:
+       - 'M01: Authentication and Individual Profile'
+
+     requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+               name:
+                 type: string
+               password:
+                 type: string
+
+               email:
+                 type: string
+               picture:
+                 type: string
+                 format: binary
+             required:
+                     - email
+                     - password
+                     - name
+
+     responses:
+       '302':
+         description: 'Redirect after processing the new user information.'
+         headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful authentication. Redirect to user profile.'
+                 value: '/users/{id}'
+               302Failure:
+                 description: 'Failed authentication. Redirect to login form.'
+                 value: '/login'
+
+ /users/{id}:
+   get:
+     operationId: R106
+     summary: 'R106: View user profile'
+     description: 'Show the individual user profile. Access: USR'
+     tags:
+       - 'M01: Authentication and Individual Profile'
+
+     parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+
+     responses:
+       '200':
+         description: 'Ok. Show User Profile UI'
+   put: 
+    operationId: R107
+    summary: 'R107: Update user profile'
+    description: 'Update the user profile. Access: USR'
+    tags:
+       - 'M01: Authentication and Individual Profile'
+
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                biography:
+                  type: string
+                phone_number: 
+                  type: string
+                profile_picture:
+                  type: string
+                  format: binary
+                password: 
+                  type: string
+              required:
+                - username
+                - email
+                - biography
+                - phone_number
+                - profile_picture
+                - passwor
+    responses: 
+      '302':
+          description: 'Redirect after processing editing a profile.'
+          headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful editing. Redirect to profile.'
+                 value: '/users/{id}'
+               302Failure:
+                 description: 'Failed editing. Redirect to profile.'
+                 value: '/users/{id}'
+      
+ /users/{id}/edit: 
+  get: 
+    operationId: R108
+    summary: 'R108: Edit profile page'
+    description: 'Show edit profile page. Access: USR.'
+    tags:
+       - 'M01: Authentication and Individual Profile'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    responses: 
+      '200':
+        description: 'Ok. Show edit profile page'
+ /dashboard: 
+  get: 
+    operationId: R109
+    summary: 'R109: Dashboard'
+    description: 'Show the Dashboard. Access: USR.'
+    tags:
+       - 'M01: Authentication and Individual Profile'
+    responses: 
+      '200':
+        description: 'Ok. Show Dashboard'
+ /projects: 
+   get: 
+    operationId: R201
+    summary: 'R201: Projects Page'
+    description: 'Show the Projects Page. Access: USR.'
+    tags:
+      - 'M02: Projects'
+    responses: 
+      '200':
+        description: 'Ok. Show Projects Page'
+ /create-project: 
+   get: 
+    operationId: R202
+    summary: 'R202: Create Project Page'
+    description: 'Show the Create Project Page. Access: USR.'
+    tags: 
+      - 'M02: Projects'
+    responses: 
+      '200':
+        description: 'Ok. Show Create Project Page'
+   post: 
+    operationId: R203
+    summary: 'R203: Create Project form'
+    description: 'Processes the creation of a new project. Access: USR.'
+    tags: 
+      - 'M02: Projects'
+    requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+               name:
+                 type: string
+               description:
+                 type: string
+               category:
+                 type: string
+             required:
+                     - name
+                     - description
+                     - category
+    responses:
+       '302':
+         description: 'Redirect after processing the creation of a new project.'
+         headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful project creation. Redirect to new project.'
+                 value: '/projects/{id}'
+               302Failure:
+                 description: 'Failed project creation. Redirect to create project form.'
+                 value: '/create-project'
+                 
+ /projects/{id}:
+   get: 
+    operationId: R204
+    summary: 'R204: Project Main Dashboard'
+    description: 'Show the Main Dashboard for a Project . Access: TM.'
+    tags:
+      - 'M02: Projects'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    responses: 
+      '200':
+        description: 'Ok. Show Project Main Dashboard'
+ /projects/{id}/team-members:
+  get: 
+    operationId: R205
+    summary: 'R205: Team members Page'
+    description: 'Show the team members page for a project. Access: TM.'
+    tags:
+      - 'M02: Projects'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    
+    responses: 
+      '200':
+        description: 'Ok. Show Team members Page'
+
+
+ /projects/{id}/add-member:
+  post: 
+    operationId: R206
+    summary: 'R206: Add team member action'
+    description: 'Add a team member to a project. Access: TM'
+    tags:
+      - 'M02: Projects'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+               userId:
+                 type: integer
+             required:
+                     - userId
+                     
+    responses:
+      '200':
+         description: 'Successfully add a new member to project.'
+      '404':
+         description: 'User not found.'
+      '400':
+         description: 'User is already team member.2'
+  
+ /tasks/{id}: 
+  get:
+    operationId: R301
+    summary: 'R301: View Task'
+    description: 'Show Individual Task. Access: TM.'
+    tags:
+      - 'M03: Tasks'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    responses: 
+      '200':
+        description: 'Ok. Show Individual Task.'
+  put:
+    operationId: R302
+    summary: 'R302: Update Task'
+    tags:
+      - 'M03: Tasks'
+    description: 'Update Task in database. Access: TM'
+    parameters: 
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+                name: 
+                 type: string
+                description:
+                 type: string
+                due_date:
+                 type: string
+                 format: date-time
+                priority:
+                 type: integer
+                status: 
+                 type: string
+             required: 
+                  - name
+                  - description
+                  - due_date
+                  - priority
+                  - status
+    
+     
+    responses:
+       '302':
+         description: 'Redirect after updating a task.'
+         headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful task editing. Redirect to project dashboard.'
+                 value: '/projects/{id}'
+               302Failure:
+                 description: 'Failed task editing. Redirect to project dashboard.'
+                 value: '/projects/{id}'
+    
+ /tasks/create/{id}: 
+  get:
+    operationId: R303
+    summary: 'R303: Create Task'
+    description: 'Show Create Task page for a project. Access: TM.'
+    tags:
+      - 'M03: Tasks'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+         
+    responses: 
+      '200':
+        description: 'Ok. Show Create Task page.'
+  post:
+    operationId: R304
+    summary: 'R304: Create Task form'
+    tags:
+      - 'M03: Tasks'
+    parameters: 
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+                name: 
+                 type: string
+                description:
+                 type: string
+                due_date:
+                 type: string
+                 format: date-time
+                priority:
+                 type: integer
+                status: 
+                 type: string
+             required: 
+                  - name
+                  - description
+                  - due_date
+                  - priority
+                  - status
+    responses:
+       '302':
+         description: 'Redirect after creating a task.'
+         headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful task creating. Redirect to project dashboard.'
+                 value: '/projects/{id}'
+               302Failure:
+                 description: 'Failed task creating. Redirect to project dashboard.'
+                 value: '/projects/{id}'
+    
+ 
+ /tasks/{id}/edit:
+  get:
+    operationId: R305
+    summary: 'R305: Edit Task Page'
+    description: 'Show Edit Task Page. Access: TM.'
+    tags:
+      - 'M03: Tasks'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    responses: 
+      '200':
+        description: 'Ok. Show Edit Task Page.'
+ /tasks/{id}/complete: 
+  post: 
+    operationId: R306
+    summary: 'R306: Complete Task'
+    description: 'Processes the marking of a task as complete. Access: TM.'
+    tags: 
+      - 'M03: Tasks'
+    parameters:
+       - in: path
+         name: id
+         schema:
+           type: integer
+         required: true
+    requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+               taskId: 
+                type: integer 
+             required: 
+               - taskId
+    responses:
+       '200':
+         description: 'Display Task as completed'
+ /:
+   get: 
+    operationId: R401
+    summary: 'R401: Get started Page'
+    description: 'Show the Get Started Page. Access: PUB.'
+    tags:
+      - 'M04: User Administration and Static Pages'
+    responses: 
+      '200':
+        description: 'Ok. Show Get Started Page'
+      '302': 
+        description: 'Redirects user to dashboard if logged in'
+        headers:
+            Location:
+              description: The URL to redirect to the dashboard
+              schema: 
+                type: string
+              examples:
+                302Success:
+                 description: 'Redirect to dashboard'
+                 value: '/dashboard'
+ /about-us: 
+  get: 
+   operationId: R402
+   summary: 'R402: About Us Page'
+   description: 'Show the About Us Page. Access: PUB.'
+   tags:
+      - 'M04: User Administration and Static Pages'
+   responses: 
+      '200':
+        description: 'Ok. Show About Us Page'
+ /contact-us: 
+  get: 
+   operationId: R403
+   summary: 'R403: Contact Us Page'
+   description: 'Show the Contact Us Page. Access: PUB.'
+   tags:
+      - 'M04: User Administration and Static Pages'
+   responses: 
+      '200':
+        description: 'Ok. Show Contact Us Page'
+ /notifications:
+   get: 
+    operationId: R501
+    summary: 'R501: Notification Page'
+    description: 'Show the notification page. Access: USR.'
+    tags: 
+     - 'M05: Notifications'
+    responses: 
+      '200':
+        description: 'Ok. Show notification page'
+ /notifications/respond: 
+  post: 
+    operationId: R502
+    summary: 'R502: Notification Response Action'
+    description: 'Respond to a notification. Access: USR'
+    tags: 
+     - 'M05: Notifications'
+    requestBody:
+       required: true
+       content:
+         application/x-www-form-urlencoded:
+           schema:
+             type: object
+             properties:
+               notification_id: 
+                type: integer 
+               response: 
+                type: string
+             required: 
+               - response
+               - notification_id
+    responses:
+       '302':
+         description: 'Redirect after responding to a notification.'
+         headers:
+           Location:
+             schema:
+               type: string
+             examples:
+               302Success:
+                 description: 'Successful response. Redirect to notification page.'
+                 value: '/notifications'
+               302Failure:
+                 description: 'Failed response. Redirect to notification page.'
+                 value: '/notifications'
+         
+
+ /search/search-usr:
+   get:
+     operationId: R601
+     summary: 'R601: Search User'
+     description: 'Searches for users and returns the results as JSON. Access: USR.'
+
+     tags:
+       - 'M06: Search'
+
+     parameters:
+       - in: query
+         name: query
+         description: String to use for full-text search
+         schema:
+           type: string
+         required: false
+       - in: query
+         name: projectId
+         description: Id of the project that the current user and the user being searched have in common
+         schema:
+           type: string
+         required: false
+     responses:
+       '200':
+         description: Success
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 type: object
+                 properties:
+                   id:
+                     type: integer
+                   name:
+                     type: string
+                   relatedProjects:
+                     type: array
+                     items: 
+                      type: string
+               example:
+                 - id: 32
+                   name: João Leitão
+                   relatedProjects: ["Project Beta", "Project Gamma", "Project Delta"]
+                 - id: 45
+                   name: Jon Stephan
+                   relatedProjects: ["Site Construction","Big Bang"]
+                   
+ 
+                   
+ 
+                  
+ 
